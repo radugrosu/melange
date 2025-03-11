@@ -9,7 +9,7 @@ clap = { version = "4.5.31", features = ["derive"] }
 env_logger = "0.11.6"
 llm = { version = "1.1.0", features = ["openai", "anthropic", "ollama", "deepseek", "xai", "phind", "google", "groq", "api"] }
 log = "0.4.26"
-proc-macro2 = "1.0.94"
+proc-macro2 = { version = "1.0.94", features = ["span-locations"] }
 quote = "1.0.39"
 regex = "1.11.1"
 reqwest = { version = "0.12.12", features = ["blocking"] }

@@ -8,6 +8,8 @@ use llm::{
 use serde::Deserialize;
 use std::{fs, str::FromStr};
 
+use crate::rules::generic::RuleWithCode;
+
 #[derive(Deserialize)]
 pub struct LlmConfig {
     pub provider: String,
@@ -54,17 +56,24 @@ fn get_api_key(backend: &LLMBackend) -> Option<String> {
 struct SystemPrompt {
     prompt: String,
 }
-
-impl Into<String> for SystemPrompt {
-    fn into(self) -> String {
-        self.prompt
+impl From<SystemPrompt> for String {
+    fn from(val: SystemPrompt) -> Self {
+        val.prompt
     }
 }
 
 impl Default for SystemPrompt {
     fn default() -> Self {
         Self {
-            prompt: "You are a helpful assistant.".to_string(),
+            prompt: r#"
+            Check the provided rule, surrounded by <rule> tags, against the subsequent piece of code,
+            surrounded by <code> tags. 
+            Make sure you are as fastidious as possible. 
+            Quote the beginning of every potential violation.
+            Include the specific way in which the code instance violates the rule.
+            Be as brief as possible.
+            "#
+            .to_string(),
         }
     }
 }
@@ -97,6 +106,10 @@ impl LlmEngine {
             .build()
             .map_err(|e| anyhow::anyhow!("Failed to build provider: {}", e))?;
         Ok(Self { provider })
+    }
+
+    pub async fn query_with_rule(&self, rule: RuleWithCode) -> Result<String> {
+        self.query(rule.to_prompt().as_str()).await
     }
 
     pub async fn query(&self, prompt: &str) -> Result<String> {
