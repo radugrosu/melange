@@ -1,8 +1,6 @@
 # Engine settings
-engine = "local" # Options: "local", "api"
+# backend options: "openai", "anthropic", "ollama", "deepseek", "xai", "phind", "google", "groq", "api"
+provider = "ollama"
+model = "qwen2.5-coder:0.5b"
+max_tokens = 4096
 
-# Local LLM settings
-local_model_path = "/path/to/model.gguf"
-
-# API settings
-api_endpoint = "https://api.openai.com/v1/chat/completions"
