@@ -1,0 +1,8 @@
+# Engine settings
+engine = "local" # Options: "local", "api"
+
+# Local LLM settings
+local_model_path = "/path/to/model.gguf"
+
+# API settings
+api_endpoint = "https://api.openai.com/v1/chat/completions"
