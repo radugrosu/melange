@@ -1,5 +1,10 @@
 use anyhow::Result;
-use std::{collections::HashMap, fmt::Display, sync::LazyLock};
+use std::{
+    collections::HashMap,
+    fmt::Display,
+    ops::Range,
+    sync::{Arc, LazyLock},
+};
 
 use regex::Regex;
 
@@ -15,41 +20,44 @@ impl Display for Rule {
         write!(f, "{}", self.description)
     }
 }
-
 #[allow(dead_code)]
 #[derive(Debug)]
 struct RuleMetaData {
     code_type: String, // "enum", "function", "struct", etc.
     item_name: String, // Name of the item
-    start_line: usize, // Starting line of the code block
-    end_line: usize,   // Ending line of the code block
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct RuleWithCode {
     rule: String,
-    code_block: String,
-    #[allow(dead_code)]
+    file_content: Arc<String>,
+    byte_range: Range<usize>,
     meta: RuleMetaData,
 }
+
+impl RuleWithCode {
+    pub fn get_code_block(&self) -> &str {
+        &self.file_content[self.byte_range.clone()]
+    }
+}
+
 impl RuleWithCode {
     pub fn new(
         rule: String,
+        file_content: Arc<String>,
         code_type: String,
         item_name: String,
-        code_block: String,
-        start_line: usize,
-        end_line: usize,
+        byte_range: Range<usize>,
     ) -> Self {
         let meta = RuleMetaData {
             code_type,
             item_name,
-            start_line,
-            end_line,
         };
         Self {
             rule,
-            code_block,
+            file_content,
+            byte_range,
             meta,
         }
     }
@@ -60,7 +68,8 @@ impl RuleWithCode {
         <rule>{}<rule>
         <code>{}<code>
         "#,
-            self.rule, self.code_block
+            self.rule,
+            self.get_code_block()
         )
     }
 }
@@ -86,3 +95,4 @@ pub fn load_project_rules() -> Result<Vec<Rule>> {
         description: "For Rust Code, don't enforce safety checks".to_string(),
     }])
 }
+

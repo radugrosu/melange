@@ -1,0 +1,5 @@
+No blocking IO in async code.
+Each unsafe block has a safety comment.
+Each hook has an integration test.
+New variants of mirrord-protocol enums are always added at the end.
+New variants of mirrord-protocol have a corresponding static VersionReq.

@@ -130,8 +130,11 @@ mod tests {
 
     #[tokio::test]
     async fn test_with_config() {
-        let engine = LlmEngine::from_config("./tests/fixtures/melange-config.toml").unwrap();
-        let response = engine.query("Explain Rust enums").await.unwrap();
+        let engine = LlmEngine::from_config("melange-config.toml").unwrap();
+        let response = engine
+            .query("This is a test. Reply with \"I understand\"")
+            .await
+            .unwrap();
         assert!(!response.is_empty());
     }
 }

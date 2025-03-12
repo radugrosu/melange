@@ -1,10 +1,9 @@
 use crate::rules::generic::{RuleWithCode, extract_rule_map};
-use quote::ToTokens;
-use std::fs;
+use std::{fs, sync::Arc};
 use syn::{File, Item, spanned::Spanned};
 
 pub fn parse_rust_file(file_path: &str) -> Vec<RuleWithCode> {
-    let content = fs::read_to_string(file_path).expect("Failed to read file");
+    let content = Arc::new(fs::read_to_string(file_path).expect("Failed to read file"));
     let syntax_tree: File = syn::parse_file(&content).expect("Failed to parse Rust file");
 
     let rule_map = extract_rule_map(&content);
@@ -16,18 +15,18 @@ pub fn parse_rust_file(file_path: &str) -> Vec<RuleWithCode> {
                 Item::Enum(item_enum) => ("enum", item_enum.ident.to_string()),
                 Item::Fn(item_fn) => ("function", item_fn.sig.ident.to_string()),
                 Item::Struct(item_struct) => ("struct", item_struct.ident.to_string()),
+                Item::Mod(item_struct) => ("mod", item_struct.ident.to_string()),
                 _ => {
                     eprintln!("Unsupported item type");
                     continue;
                 }
             };
             let rule = RuleWithCode::new(
-                rule.clone().to_string(),
+                rule.to_string(),
+                Arc::clone(&content),
                 code_type.to_string(),
                 item_name,
-                item.to_token_stream().to_string(),
-                start_line,
-                item.span().end().line,
+                item.span().byte_range(),
             );
             rules.push(rule);
         }
