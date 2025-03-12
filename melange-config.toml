@@ -1,0 +1,11 @@
+# backend options: "openai", "anthropic", "ollama", "deepseek", "xai", "phind", "google", "groq", "api"
+
+# provider = "ollama"
+# model = "qwen2.5-coder:0.5b"
+# max_tokens = 4096
+
+# provider = "openai"
+# max_tokens = 1024
+
+max_tokens = 1024
+provider = "google"

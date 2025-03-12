@@ -2,7 +2,7 @@
 
 ## Overview
 
-Melange is an ai-powered linter automating enforcement of rules specified in natural language by users.
+Melange is an AI-powered code linter automating enforcement of rules specified in natural language by users.
 
 The rules exist at three levels:
 
@@ -63,6 +63,20 @@ enum Cake {
  Icing,
  Coating
  GreatCoating
- ^ - two worded enum found!
 }
+```
+
+## Configuration
+
+The llm provider and the relevant settings are configured through the melange-config.toml file.
+Melange supports both local providers such as ollama or remote ones such as openai, google, etc.
+The api keys, where necessary, are looked up in the environment under the key `PROVIDER_API_KEY` (e.g. OPENAI_API_KEY).
+
+Example configuration:
+
+```bash
+> cat melange-config.toml
+provider = "ollama"
+model = "qwen2.5-coder:0.5b"
+max_tokens = 4096
 ```
