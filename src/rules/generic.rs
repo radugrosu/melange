@@ -31,6 +31,7 @@ struct RuleMetaData {
 #[derive(Debug)]
 pub struct RuleWithCode {
     rule: String,
+    file_name: String,
     file_content: Arc<String>,
     byte_range: Range<usize>,
     meta: RuleMetaData,
@@ -45,6 +46,7 @@ impl RuleWithCode {
 impl RuleWithCode {
     pub fn new(
         rule: String,
+        file_name: String,
         file_content: Arc<String>,
         code_type: String,
         item_name: String,
@@ -56,6 +58,7 @@ impl RuleWithCode {
         };
         Self {
             rule,
+            file_name,
             file_content,
             byte_range,
             meta,
@@ -66,9 +69,11 @@ impl RuleWithCode {
         format!(
             r#"
         <rule>{}<rule>
+        <path>{}<path>
         <code>{}<code>
         "#,
             self.rule,
+            self.file_name,
             self.get_code_block()
         )
     }

@@ -72,6 +72,8 @@ impl Default for SystemPrompt {
             Quote the beginning of every potential violation.
             Include the specific way in which the code instance violates the rule.
             Be as brief as possible.
+            The response should be one valid json object, containing a list of tuples where each tuple 
+            is a pair of rule with its corresponding violation.
             "#
             .to_string(),
         }

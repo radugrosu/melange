@@ -1,15 +1,16 @@
+use serde::Serialize;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use syn::{Item, Visibility};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct ModuleNode {
     name: String,
     kind: String,
     visibility: String,
     is_async: bool,
     children: Vec<ModuleNode>,
-    path: PathBuf,
+    path: String,
 }
 
 fn get_crate_name(crate_path: &Path) -> String {
@@ -46,7 +47,7 @@ pub fn parse_crate(crate_path: &str) -> ModuleNode {
         visibility: "pub".to_string(),
         is_async: false,
         children: Vec::new(),
-        path: path.to_path_buf(),
+        path: path.to_string_lossy().into_owned(),
     };
 
     // Check for lib.rs or main.rs
@@ -96,7 +97,7 @@ fn process_file(file_path: &Path, parent: &mut ModuleNode) {
                     visibility,
                     is_async: false,
                     children: Vec::new(),
-                    path: file_path.to_path_buf(),
+                    path: file_path.to_string_lossy().into_owned(),
                 };
 
                 // Check if module content is inline
@@ -108,7 +109,6 @@ fn process_file(file_path: &Path, parent: &mut ModuleNode) {
                 } else {
                     // External module - check for file in same directory or subdir
                     let parent_dir = file_path.parent().unwrap_or(Path::new(""));
-
                     // Check for [module_name].rs
                     let mod_file = parent_dir.join(format!("{}.rs", mod_name));
                     // Check for [module_name]/mod.rs
@@ -239,9 +239,13 @@ fn get_visibility(vis: &Visibility) -> String {
     }
 }
 
+pub fn dump_to_json(root: &ModuleNode) -> serde_json::Result<String> {
+    serde_json::to_string_pretty(root)
+}
+
 pub fn print_module_tree(root: &ModuleNode) {
     println!("crate {}", root.name);
-    print_modules(&root.children, &vec![]);
+    print_modules(&root.children, &[]);
 }
 
 fn print_modules(modules: &[ModuleNode], is_last_ancestors: &[bool]) {
@@ -278,8 +282,24 @@ fn print_modules(modules: &[ModuleNode], is_last_ancestors: &[bool]) {
         println!("{}{}{}", prefix, node_info, visibility_suffix);
 
         // Prepare ancestor state for children
-        let mut child_ancestors = is_last_ancestors.to_vec();
-        child_ancestors.push(is_last);
+        let child_ancestors = is_last_ancestors
+            .iter()
+            .copied()
+            .chain(std::iter::once(is_last))
+            .collect::<Vec<_>>();
         print_modules(&module.children, &child_ancestors);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_print() {
+        let crate_structure = parse_crate(".");
+        print_module_tree(&crate_structure);
+        let json = dump_to_json(&crate_structure).expect("Failed to serialize to JSON");
+        println!("\nJSON:\n{}", json);
     }
 }
